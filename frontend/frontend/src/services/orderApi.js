@@ -7,10 +7,10 @@ export async function getOrders() {
 }
 
 // Create order
-export async function addOrder(data) {
+export async function createOrder(amount) {
   const response = await api.post("/orders", null, {
     params: {
-      amount: data.amount,
+      amount: amount,
     },
   });
 
@@ -23,14 +23,7 @@ export async function completeOrder(id) {
   return response.data;
 }
 
-export async function createOrder(data) {
-  const response = await api.post("/orders", null, {
-    params: data,
-  });
-
-  return response.data;
-}
-
+// Delete order
 export async function deleteOrder(id) {
   const response = await api.delete(`/orders/${id}`);
   return response.data;

@@ -1,40 +1,37 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from dotenv import load_dotenv
-from urllib.parse import quote_plus
 import os
 
+# Load environment variables
 load_dotenv()
 
+# Base class for all models
 Base = declarative_base()
 
-# Database credentials
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD"))
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+# Get DATABASE_URL from .env
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Database URL (STRING)
-DATABASE_URL = (
-    f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@"
-    f"{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is missing in the .env file")
 
-# Create engine
+# PostgreSQL Engine (Neon)
 engine = create_engine(
-    DATABASE_URL
+    DATABASE_URL,
+    pool_pre_ping=True,
+    pool_recycle=300,
+    echo=False,          # Change to True if you want SQL logs
+    future=True,
 )
 
-# Session factory
+# Database Session
 SessionLocal = sessionmaker(
+    bind=engine,
     autocommit=False,
     autoflush=False,
-    bind=engine
 )
 
-
-# Dependency for FastAPI
+# Dependency
 def get_db():
     db = SessionLocal()
     try:

@@ -29,7 +29,9 @@ export default function AddOrderModal({
 
       setAmount("");
 
-      onSuccess();
+      if (onSuccess) {
+        await onSuccess();
+      }
 
       onClose();
 
@@ -42,9 +44,9 @@ export default function AddOrderModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-      <div className="bg-white rounded-2xl w-[420px] p-8 shadow-xl">
+      <div className="bg-white rounded-2xl shadow-xl w-[420px] p-8">
 
         <h2 className="text-2xl font-bold mb-6">
           Create Order
@@ -57,10 +59,10 @@ export default function AddOrderModal({
 
           <input
             type="number"
-            placeholder="Order Amount"
+            placeholder="Enter Order Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full border rounded-xl p-3"
+            className="w-full border rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none"
             required
           />
 
@@ -69,7 +71,7 @@ export default function AddOrderModal({
             <button
               type="button"
               onClick={onClose}
-              className="bg-gray-200 px-5 py-2 rounded-xl"
+              className="px-5 py-2 rounded-xl bg-gray-200 hover:bg-gray-300"
             >
               Cancel
             </button>
@@ -77,7 +79,7 @@ export default function AddOrderModal({
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl"
+              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
             >
               {loading ? "Creating..." : "Create Order"}
             </button>

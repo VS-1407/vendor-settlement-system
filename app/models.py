@@ -1,99 +1,173 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    ForeignKey,
+)
+from sqlalchemy.orm import relationship
 from datetime import datetime
 
-Base = declarative_base()
+from app.database import Base
 
 
+# ----------------------------
+# Users
+# ----------------------------
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    username = Column(String(50), unique=True, nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    password = Column(String(255), nullable=False)
+
+    role = Column(String(20), default="vendor")
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    vendors = relationship(
+        "Vendor",
+        back_populates="user"
+    )
+
+
+# ----------------------------
+# Vendors
+# ----------------------------
 class Vendor(Base):
     __tablename__ = "vendors"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=True)
 
-    name = Column(String(100))
-    email = Column(String(100))
-    account_id = Column(String(100))
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=True
+    )
+
+    name = Column(String(100), nullable=False)
+    email = Column(String(100), nullable=False)
+
+    account_id = Column(
+        String(100),
+        nullable=True
+    )
+
     created_at = Column(
-     DateTime,
-     default=datetime.utcnow
-    )   
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    user = relationship(
+        "User",
+        back_populates="vendors"
+    )
 
 
+# ----------------------------
+# Orders
+# ----------------------------
 class Order(Base):
     __tablename__ = "orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    amount = Column(Float)
-    status = Column(String(50))
-    created_at = Column(DateTime, default=datetime.utcnow)
+
+    amount = Column(Float, nullable=False)
+
+    status = Column(
+        String(50),
+        default="Pending"
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
 
 
+# ----------------------------
+# Settlements
+# ----------------------------
 class Settlement(Base):
     __tablename__ = "settlements"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    order_id = Column(Integer)
-    vendor_id = Column(Integer)
+    order_id = Column(
+        Integer,
+        ForeignKey("orders.id")
+    )
 
-    amount = Column(Float)
+    vendor_id = Column(
+        Integer,
+        ForeignKey("vendors.id")
+    )
 
-    status = Column(String(50), default="Pending")
+    amount = Column(Float, nullable=False)
 
-    transfer_id = Column(String(100), nullable=True)
+    status = Column(
+        String(50),
+        default="Pending"
+    )
 
-    retry_count = Column(Integer, default=0)
+    transfer_id = Column(
+        String(100),
+        nullable=True
+    )
+
+    retry_count = Column(
+        Integer,
+        default=0
+    )
 
     last_retry_at = Column(
         DateTime,
         nullable=True
     )
 
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
 
+
+# ----------------------------
+# Order Items
+# ----------------------------
 class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    order_id = Column(Integer)
-    vendor_id = Column(Integer)
-
-    item_name = Column(String(100))
-    price = Column(Float)
-    quantity = Column(Integer)
-
-    created_at = Column(
-        DateTime,
-        default=datetime.utcnow
+    order_id = Column(
+        Integer,
+        ForeignKey("orders.id")
     )
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    username = Column(
-        String(50),
-        unique=True,
-        nullable=False
+    vendor_id = Column(
+        Integer,
+        ForeignKey("vendors.id")
     )
 
-    email = Column(
+    item_name = Column(
         String(100),
-        unique=True,
         nullable=False
     )
 
-    password = Column(
-        String(255),
+    price = Column(
+        Float,
         nullable=False
     )
 
-    role = Column(
-        String(20),
-        default="vendor"
+    quantity = Column(
+        Integer,
+        nullable=False
     )
 
     created_at = Column(
@@ -102,19 +176,27 @@ class User(Base):
     )
 
 
+# ----------------------------
+# Transaction Ledger
+# ----------------------------
 class TransactionLedger(Base):
     __tablename__ = "transaction_ledger"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    settlement_id = Column(Integer)
+    settlement_id = Column(
+        Integer,
+        ForeignKey("settlements.id")
+    )
 
     event_type = Column(
-        String(50)
+        String(50),
+        nullable=False
     )
 
     message = Column(
-        String(255)
+        String(255),
+        nullable=False
     )
 
     created_at = Column(
